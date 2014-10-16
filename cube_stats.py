@@ -16,8 +16,11 @@ def main():
 
     colors = cube.get_distinct('Color')
     i = 1
+    color_dic = {'MONO_BLACK':'k', 'MONO_BLUE':'b', 'MONO_GREEN':'g', 'MONO_WHITE':'w', 'MONO_RED':'r'}
     for color_id, color in enumerate(colors):
-
+        if "MONO_" not in color:
+            continue
+        i+= 1
         print 'COLOR: {}'.format(color)
 
         cmcs = cube.get_distinct('CMC', 'Color', color)
@@ -40,11 +43,16 @@ def main():
 
         print cmcs
         print percents
-        plot.bar(cmcs, percents, zs=color_id, zdir='y', color='r', alpha=.8)
+        #plot.bar(cmcs, percents, zs=color_id, zdir='y', color='r', alpha=.8)
+        plot.bar(cmcs, percents, zs=i, zdir='y', color=color_dic[color], alpha=.8)
     plot.set_xlabel('CMC')
     plot.set_zlabel('Percent')
     plot.set_ylabel('Color')
-    plot.set_yticklabels(colors)
+    color_labels = []
+    for color in colors:
+        if "MONO_" in color:
+            color_labels.append('')
+    plot.set_yticklabels(color_labels)
 
     plt.show()
 
