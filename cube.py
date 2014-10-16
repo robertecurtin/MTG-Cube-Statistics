@@ -24,9 +24,17 @@ class MTG_Cube:
         return self.cursor.fetchone()[0]
 
     def sql(self, command, *parameters): # Runs the given command through SQLite, formatted with the given parameters
-        parameters = tuple(['"' + str(x) + '"' for x in parameters]) # Necessary to insert into SQLite statement
-        print command.format(*parameters)
-        self.cursor.execute(command.format(*parameters))
+        formatted = []
+        for x in parameters:
+            if (type(x) == str or type(x) == unicode): # Reformat strings, this is necessary to insert column titles into SQLite statements
+                x = '"' + x + '"'
+            else:
+                print x
+                print type(x)
+            formatted.append(x)
+        formatted = tuple(formatted)
+        print command.format(*formatted)
+        self.cursor.execute(command.format(*formatted))
 
     def get_distinct(self, column_to_search, *columninfo):
         command = "SELECT DISTINCT {} FROM Cards"
@@ -34,14 +42,14 @@ class MTG_Cube:
             command += " WHERE {}={}"
         for i in range(2, len(columninfo), 2):
             command += " AND {}={}"
-        self.sql("SELECT DISTINCT {} FROM Cards", column_to_search, *columninfo)
+        self.sql(command, column_to_search, *columninfo)
         return self.fetchall()
 
     def get_number(self, *columninfo): # Requires all tables to filter by in the format (table_name_1, filter_value_1, table_name_2, filter_value_2
-        command = "SELECT COUNT({0}) AS Number FROM Cards WHERE {0}={1}"
+        command = "SELECT COUNT(*) FROM Cards WHERE {0}={1}"
         for i in range(2, len(columninfo), 2):
             command += " AND {" + str(i) + "}={" + str(i+1) + "}"
         print command
         print columninfo
         self.sql(command, *columninfo)
-        return self.fetchone()
+        return float(self.fetchone())
