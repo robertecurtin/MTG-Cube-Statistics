@@ -25,28 +25,23 @@ class MTG_Cube:
 
     def sql(self, command, *parameters): # Runs the given command through SQLite, formatted with the given parameters
         parameters = tuple(['"' + str(x) + '"' for x in parameters]) # Necessary to insert into SQLite statement
+        print command.format(*parameters)
         self.cursor.execute(command.format(*parameters))
 
-    def get_all_distinct(self, column_name):
-        self.sql("SELECT DISTINCT {} FROM Cards", column_name)
+    def get_distinct(self, column_to_search, *columninfo):
+        command = "SELECT DISTINCT {} FROM Cards"
+        if columninfo:
+            command += " WHERE {}={}"
+        for i in range(2, len(columninfo), 2):
+            command += " AND {}={}"
+        self.sql("SELECT DISTINCT {} FROM Cards", column_to_search, *columninfo)
         return self.fetchall()
 
-    def get_total_number(self, column_name):
-        self.sql("SELECT COUNT({}) AS Number FROM Cards",column_name)
+    def get_number(self, *columninfo): # Requires all tables to filter by in the format (table_name_1, filter_value_1, table_name_2, filter_value_2
+        command = "SELECT COUNT({0}) AS Number FROM Cards WHERE {0}={1}"
+        for i in range(2, len(columninfo), 2):
+            command += " AND {" + str(i) + "}={" + str(i+1) + "}"
+        print command
+        print columninfo
+        self.sql(command, *columninfo)
         return self.fetchone()
-
-    def get_number_within(self, column_to_count, filter_column, filter_value):
-        self.sql("SELECT COUNT({0}) AS Number FROM Cards WHERE {1}={2}",
-                 column_to_count, filter_column, filter_value)
-        return self.fetchone()
-        
-    def get_distinct_within(self, column_to_search, filter_column, filter_value):
-        self.sql("SELECT DISTINCT {} FROM Cards WHERE {}={}",
-                 column_to_search, filter_column, filter_value)
-        return self.fetchall()
-
-    def get_number_within_two(self, column_to_count, filter_column_1, filter_value_1, filter_column_2, filter_value_2):
-        self.sql("SELECT COUNT({}) AS Number FROM Cards WHERE {}={} AND {}={}",
-                 column_to_count, filter_column_1, filter_value_1, filter_column_2, filter_value_2)
-        return self.fetchone()
-
