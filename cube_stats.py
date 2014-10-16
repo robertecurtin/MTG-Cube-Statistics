@@ -3,24 +3,32 @@ import csv
 from cube import MTG_Cube
 
 def main():
-    personal_cube = MTG_Cube('cube')
-    generic_360_cube = MTG_Cube('cube_avg_360')
-    generic_720_cube = MTG_Cube('cube_avg_720')
-    for color in personal_cube.get_all_colors():
+    cube = MTG_Cube('cube')
+    other_cube = MTG_Cube('cube_avg_360')
+    level_1 = []
+    other_level_1 = []
+    level_2 = []
+    other_level_2 = []
+    
+    for color in cube.get_all_distinct('Color'):
         print 'COLOR: {}'.format(color)
-        for cmc in personal_cube.get_all_cmc_in_color(color):
-            print 'CMC: {}'.format(cmc)
-            personal_number = personal_cube.get_number_of_color(color)
-            personal_percent = 100 * personal_cube.get_number_of_cmc_in_color(cmc, color) / personal_number
-            print 'Personal: {}, {}%'.format(personal_number, personal_percent)
+
+        for cmc in cube.get_distinct_within('CMC', 'Color', color):
+
+            print '    CMC: {}'.format(cmc)
+
+            color_total = cube.get_total_number(color)
+            cmc_in_color = cube.get_number_within(cmc, color)
+            percent = 100 * cmc_in_color / color_total
+            print '        My cube: {}/{}, {}%'.format(
+                cmc_in_color, color_total, percent)
             
-            generic_360_number = generic_360_cube.get_number_of_color(color)
-            generic_360_percent = 100 * generic_360_cube.get_number_of_cmc_in_color(cmc, color) / generic_360_number
-            print 'Personal: {}, {}%'.format(generic_360_number, generic_360_percent)
+            other_color_total = other_cube.get_total_number(color)
+            other_cmc_in_color = other_cube.get_number_within(cmc, color)
+            other_percent = 100 * other_cmc_in_color / other_color_total
+            print '        Other: {}/{}, {}%'.format(
+                other_cmc_in_color, other_color_total, other_percent)
             
-            generic_720_number = generic_720_cube.get_number_of_color(color)
-            generic_720_percent = 100 * generic_720_cube.get_number_of_cmc_in_color(cmc, color) / generic_720_number
-            print 'Personal: {}, {}%'.format(generic_720_number, generic_720_percent)
 
 def main2():
     db = sqlite3.connect(':memory:')

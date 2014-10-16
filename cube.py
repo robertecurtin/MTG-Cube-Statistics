@@ -17,30 +17,41 @@ class MTG_Cube:
         
         self.db.commit()
 
-    def get_all_colors(self):
-        self.cursor.execute("SELECT DISTINCT Color FROM Cards")
-        value = [x[0] for x in self.cursor.fetchall()]
-        return value
+    def fetchall(self):
+        return [x[0] for x in self.cursor.fetchall()]
 
-    def get_all_card_types(self):
-        self.cursor.execute("SELECT DISTINCT Card_Type FROM Cards")
-        value = [x[0] for x in self.cursor.fetchall()]
-        return value
-    
-    def get_all_cmc(self):
-        self.cursor.execute("SELECT DISTINCT CMC FROM Cards")
-        value = [x[0] for x in self.cursor.fetchall()]
-        return value
-    
-    def get_all_cmc_in_color(self, color):
-        self.cursor.execute("SELECT DISTINCT CMC FROM Cards WHERE Color=?", (color,))
-        value = [x[0] for x in self.cursor.fetchall()]
-        return value
+    def fetchone(self):
+        return self.cursor.fetchone()[0]
+
+    def get_all_distinct(self, table_name):
+        table_name = '"' + table_name + '"' # Necessary to insert into SQLite statement
+        self.cursor.execute("SELECT DISTINCT {} FROM Cards".format(table_name))
+        return self.fetchall()
+
+    def get_total_number(self, table_name):
+        table_name = '"' + table_name + '"'
+        self.cursor.execute("SELECT COUNT({}) AS Number FROM Cards WHERE {}=?", (table_name, table_name))
+        return self.fetchone()
+
+    def get_number_within(self, table_to_count, filter_table, filter_value):
+        table_to_count = '"' + table_to_count + '"'
+        filter_table = '"' + filter_table + '"'
+        self.cursor.execute("SELECT COUNT({}) AS Number FROM Cards WHERE {}=?",
+                            (table_to_count, filter_table, filter_value))
+        return self.fetchall()
         
-    def get_number_of_color(self, color):
-        self.cursor.execute("SELECT COUNT(Color) AS Number FROM Cards WHERE Color=?", (color,))
-        return self.cursor.fetchone()[0]
+    def get_distinct_within(self, table_to_search, filter_table, filter_value):
+        table_to_search = '"' + table_to_search + '"'
+        filter_table = '"' + filter_table + '"'
+        self.cursor.execute("SELECT DISTINCT {} FROM Cards WHERE {}=?",
+                            (table_to_search, filter_table, filter_value))
+        return self.fetchall()
 
-    def get_number_of_cmc_in_color(self, cmc, color):
-        self.cursor.execute("SELECT COUNT(Color) AS Number FROM Cards WHERE CMC=? AND Color=?", (cmc,color))
-        return self.cursor.fetchone()[0]
+    def get_number_within_two(self, table_to_count, filter_table_1, filter_value_1, filter_table_2, filter_value_2):
+        table_to_count = '"' + table_to_count + '"'
+        filter_table_1 = '"' + filter_table_1 + '"'
+        filter_table_2 = '"' + filter_table_2 + '"'
+        self.cursor.execute("SELECT COUNT({}) AS Number FROM Cards WHERE {}=? AND {}=?",
+                            (table_to_count, filter_table_1, filter_value_1, filter_table_2, filter_value_2))
+        return self.fetchall()
+
